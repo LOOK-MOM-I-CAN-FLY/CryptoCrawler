@@ -1,0 +1,56 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: cryptodb
+    restart: always
+    environment:
+      POSTGRES_USER: crypto_user
+      POSTGRES_PASSWORD: your_strong_password
+      POSTGRES_DB: cryptodb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+  redis:
+    image: redis:6-alpine
+    container_name: cryptoredis
+    restart: always
+    ports:
+      - '6379:6379'
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cryptoapi
+    restart: always
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgresql+asyncpg://crypto_user:your_strong_password@db:5432/cryptodb
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: your_jwt_secret_key
+    ports:
+      - '8000:8000'
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  crawler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cryptocrawler
+    restart: always
+    depends_on:
+      - api
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgresql+asyncpg://crypto_user:your_strong_password@db:5432/cryptodb
+      REDIS_URL: redis://redis:6379/0
+    command: python -m app.crawler.crawler
+
+volumes:
+  db_data:
