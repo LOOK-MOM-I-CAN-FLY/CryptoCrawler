@@ -4,3 +4,39 @@
 *.zip
 .dot
 *.exe
+
+# --- Бинарные артефакты Go ---
+*.exe
+*.a
+*.o
+main          # если это собранный бинарь
+marketplace   # второй бинарь
+
+# --- Архивы ---
+*.zip
+*.rar
+
+# --- Логи и временные файлы ---
+*.log
+npm-debug.log*
+*.tmp
+*.swp
+*~
+
+
+
+uploads/
+backups/
+
+
+docker-compose.override.yml
+
+
+
+nginx/ssl/
+nginx/logs/
+logs/
+
+.DS_Store
+.vscode/
+.idea/
