@@ -2,7 +2,7 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 asyncpg
-aioredis
+redis>=4.2.0
 httpx
 python-dotenv
 pydantic==1.10.12
