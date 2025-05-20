@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 class Coin(Base):
-    __tablename__ = 'coin'  # Имя таблицы в БД (singular)
+    __tablename__ = 'coin'
     id = Column(Integer, primary_key=True, index=True)
     cg_id = Column(String(64), unique=True, nullable=False, index=True)
     symbol = Column(String(10), nullable=False)

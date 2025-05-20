@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
-from typing import Optional
 from ..schemas import PriceListResponse, PriceRecordResponse
 from ..crud import get_coin, get_price_records
 from ..database import get_db
@@ -23,10 +22,7 @@ async def read_prices(
     return {"count": count, "list": items}
 
 @router.get("/{coin_id}/prices/latest", response_model=PriceRecordResponse)
-async def read_latest_price(
-    coin_id: int,
-    db: AsyncSession = Depends(get_db)
-):
+async def read_latest_price(coin_id: int, db: AsyncSession = Depends(get_db)):
     if not await get_coin(db, coin_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Coin not found")
     now = datetime.utcnow()

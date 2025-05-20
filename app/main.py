@@ -6,7 +6,6 @@ from .api.coins import router as coins_router
 from .api.prices import router as prices_router
 
 app = FastAPI(title="CryptoMonitor API")
-
 app.include_router(coins_router)
 app.include_router(prices_router)
 

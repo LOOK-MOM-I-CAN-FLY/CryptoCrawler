@@ -1,9 +1,10 @@
-from pydantic import BaseSettings, PostgresDsn, RedisDsn, Field
+import os
+from pydantic import BaseSettings, PostgresDsn, Field
 
 class Settings(BaseSettings):
-    database_url: PostgresDsn = Field(..., env='DATABASE_URL')
-    redis_url: RedisDsn = Field(..., env='REDIS_URL')
-    secret_key: str = Field(..., env='SECRET_KEY')
+    DATABASE_URL: PostgresDsn
+    REDIS_URL: str
+    SECRET_KEY: str
 
     class Config:
         env_file = '.env'
