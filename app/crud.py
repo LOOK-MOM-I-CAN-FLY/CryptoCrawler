@@ -3,27 +3,24 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from .models import Coin, PriceRecord
-from .schemas import CoinCreate
+from .schemas import CoinCreate, PriceRecordCreate
 from datetime import datetime
 
 # Coins
-async def get_coins(db: AsyncSession):
-    result = await db.execute(select(Coin))
+async def get_coins(db: AsyncSession, skip: int = 0, limit: int = 100):
+    result = await db.execute(select(Coin).offset(skip).limit(limit))
     return result.scalars().all()
 
 async def get_coin(db: AsyncSession, coin_id: int):
     result = await db.execute(select(Coin).where(Coin.id == coin_id))
     return result.scalar_one_or_none()
 
-async def create_coin(db: AsyncSession, data: CoinCreate):
-    stmt = insert(Coin).values(**data.dict()).returning(Coin)
-    try:
-        res = await db.execute(stmt)
-        await db.commit()
-        return res.scalar_one()
-    except Exception as e:
-        await db.rollback()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+async def create_coin(db: AsyncSession, coin: CoinCreate) -> Coin:
+    db_coin = Coin(**coin.dict())
+    db.add(db_coin)
+    await db.commit()
+    await db.refresh(db_coin)
+    return db_coin
 
 async def delete_coin(db: AsyncSession, coin_id: int):
     stmt = delete(Coin).where(Coin.id == coin_id)
@@ -43,12 +40,18 @@ async def get_price_records(db: AsyncSession, coin_id: int, start: datetime, end
     items = res.scalars().all()
     return len(items), items
 
-async def create_or_update_price_record(db: AsyncSession, coin_id: int, record: dict):
-    record['coin_id'] = coin_id
-    stmt = pg_insert(PriceRecord).values(**record)
-    stmt = stmt.on_conflict_do_update(
-        index_elements=[PriceRecord.coin_id, PriceRecord.recorded_at],
-        set_=record
-    )
-    await db.execute(stmt)
+async def create_price_record(db: AsyncSession, price_record: PriceRecordCreate) -> PriceRecord:
+    db_price_record = PriceRecord(**price_record.dict())
+    db.add(db_price_record)
     await db.commit()
+    await db.refresh(db_price_record)
+    return db_price_record
+
+async def get_latest_price(db: AsyncSession, coin_id: int) -> PriceRecord:
+    result = await db.execute(
+        select(PriceRecord)
+        .where(PriceRecord.coin_id == coin_id)
+        .order_by(PriceRecord.timestamp.desc())
+        .limit(1)
+    )
+    return result.scalar_one_or_none()

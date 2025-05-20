@@ -1,16 +1,13 @@
-import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from .config import settings
+from sqlalchemy.ext.declarative import declarative_base
 
-# создаём движок и локатор сессий
-engine = create_async_engine(settings.DATABASE_URL, echo=False, future=True)
-AsyncSessionLocal = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+DATABASE_URL = "postgresql+asyncpg://postgres:postgres@db:5432/cryptodb"
 
-# вот так FastAPI ждёт асинхронный генератор
+engine = create_async_engine(DATABASE_URL, echo=True)
+async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+Base = declarative_base()
+
 async def get_db():
-    session = AsyncSessionLocal()
-    try:
-        yield session       # здесь FastAPI отдаёт session в роут
-    finally:
-        await session.close()
+    async with async_session() as session:
+        yield session

@@ -1,8 +1,5 @@
--- 1. Создаём пользователя с паролем
-CREATE USER crypto_user WITH PASSWORD 'hAd13a';
+CREATE USER postgres WITH PASSWORD 'postgres';
 
--- 2. Создаём базу данных и делаем владельцем нашего пользователя
-CREATE DATABASE cryptodb OWNER crypto_user;
+CREATE DATABASE cryptodb OWNER postgres;
 
--- 3. Даём привилегии на создание схем и объектов в этой БД (необязательно, если OWNER)
-GRANT ALL PRIVILEGES ON DATABASE cryptodb TO crypto_user;
+GRANT ALL PRIVILEGES ON DATABASE cryptodb TO postgres;
